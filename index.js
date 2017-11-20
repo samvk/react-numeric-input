@@ -385,7 +385,7 @@ module.exports =
 	                            e.preventDefault();
 	                            this.refs.input.selectionStart = this.refs.input.selectionEnd = this.refs.input.selectionEnd + 1;
 	                        }
-	                    } else if((48 <= e.keyCode && e.keyCode <= 57) || (96 <= e.keyCode && e.keyCode <=105)) {
+	                    } else if(!((48 <= e.keyCode && e.keyCode <= 57) || (96 <= e.keyCode && e.keyCode <=105))) {
 			    	e.preventDefault(); // don't allow non-numberic characters
 			    }
 	                }
