@@ -74,6 +74,12 @@ module.exports =
 	var IS_BROWSER = typeof document != 'undefined';
 	var RE_NUMBER = /^[+-]?((\.\d+)|(\d+(\.\d+)?))$/;
 	var RE_INCOMPLETE_NUMBER = /^([+-]|\.0*|[+-]\.0*|[+-]?\d+\.)?$/;
+	
+	function validInputKey(keyCode) {
+		var numberKey = (48 <= keyCode && keyCode <= 57) || (96 <= keyCode && keyCode <= 105);
+		var specialKey = [9, 13, 37, 39].indexOf(keyCode) !== -1; // ['tab', 'enter', 'left', 'right']
+		return numberKey || specialKey;
+	}
 
 	function addClass(element, className) {
 	    if (element.classList) {
@@ -385,7 +391,7 @@ module.exports =
 	                            e.preventDefault();
 	                            this.refs.input.selectionStart = this.refs.input.selectionEnd = this.refs.input.selectionEnd + 1;
 	                        }
-	                    } else if(!((48 <= e.keyCode && e.keyCode <= 57) || (96 <= e.keyCode && e.keyCode <=105))) {
+	                    } else if(!validInputKey) {
 			    	e.preventDefault(); // don't allow non-numberic characters
 			    }
 	                }
