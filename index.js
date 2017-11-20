@@ -391,7 +391,7 @@ module.exports =
 	                            e.preventDefault();
 	                            this.refs.input.selectionStart = this.refs.input.selectionEnd = this.refs.input.selectionEnd + 1;
 	                        }
-	                    } else if(!validInputKey) {
+	                    } else if(!validInputKey(e.keyCode)) {
 			    	e.preventDefault(); // don't allow non-numberic characters
 			    }
 	                }
