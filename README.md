@@ -8,8 +8,7 @@ the browsers. Additionally this component offers more flexible options and can
 be used for any values (differently formatted representations of the internal
 numeric value).
 
-![Demo](https://i.imgur.com/uUnxO73.gif)
-### [**Live demo**](http://vlad-ignatov.github.io/react-numeric-input/)
+[Live demo](http://vlad-ignatov.github.io/react-numeric-input/)
 
 ## Installation
 ```sh
@@ -56,12 +55,6 @@ or decrementing (up/down buttons or arrow keys) you can use the `snap` prop:
 <NumericInput step={0.5} precision={2} value={50.3} snap/>
 ```
 
-#### Strict vs Loose Mode
-You can type any value in the input as long as it is in focus. On blur, or when
-you attempt to increment/decrement it, the value will be converted to number.
-If you don't want this behaviour, pass `strict` in the props and any value that
-cannot be converted to number will be rejected immediately.
-
 #### Custom format
 By default the component displays the value number as is. However, you can
 provide your own `format` function that will be called with the numeric value
@@ -85,24 +78,22 @@ function parse(stringValue) {
 ```
 
 ## Props
-Name              | Type                                | Default
-------------------|-------------------------------------|:-------:
-**value**         |`number` or `string`                 |`""` which converts to 0
-**min**           |`number` or `function`               |`Number.MIN_SAFE_INTEGER`
-**max**           |`number` or `function`               |`Number.MAX_SAFE_INTEGER`
-**step**          |`number` or `function`               | 1
-**precision**     |`number` or `function`               | 0
-**parse**         |`function`                           | parseFloat
-**format**        |`function`                           | none
-**className**     |`string`                             | none
-**disabled**      |`boolean`                            | none
-**readOnly**      |`boolean`                            | none
-**style**         |`object` or `false`                  | none
-**size**          |`number` or `string`                 | none
-**mobile**        |`true`, `false`, 'auto' or `function`|`auto`
-**snap**          |`boolean`                            | none (false)
-**componentClass**|`string` or `function`               |`"input"`
-**strict**        |`boolean`                            |`false`
+Name         | Type                                | Default
+-------------|-------------------------------------|:-------:
+**value**    |`number` or `string`                 | `""` which converts to 0
+**min**      |`number` or `function`               | `Number.MIN_SAFE_INTEGER`
+**max**      |`number` or `function`               | `Number.MAX_SAFE_INTEGER`
+**step**     |`number` or `function`               | 1
+**precision**|`number` or `function`               | 0
+**parse**    |`function`                           | parseFloat
+**format**   |`function`                           | none
+**className**|`string`                             | none
+**disabled** |`boolean`                            | none
+**readOnly** |`boolean`                            | none
+**style**    |`object` or `false`                  | none
+**size**     |`number` or `string`                 | none
+**mobile**   |`true`, `false`, 'auto' or `function`|`auto`
+**snap**     |`boolean`                            | none (false)
 
 Any other option is passed directly the input created by the component. Just
 don't forget to camelCase the attributes. For example `readonly` must be `readOnly`.
