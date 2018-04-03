@@ -24,44 +24,44 @@ function testProp(cfg) {
 }
 
 function testInputProp(cfg) {
-    cfg.getValue = cfg.getValue || (widget => widget.refsInput[cfg.propName])
+    cfg.getValue = cfg.getValue || (widget => widget.refs.input[cfg.propName])
     return testProp(cfg).then(() => {
         let app = TestUtils.renderIntoDocument(<NumericInput />)
         let attrName = cfg.attrName || cfg.propName.toLowerCase()
         if (attrName == "pattern") {
             return new Promise(resolve => {
-                expect(app.refsInput.outerHTML.search(
+                expect(app.refs.input.outerHTML.search(
                     new RegExp('\\bpattern="\\.\\*"')
                 )).toNotEqual(
                     -1,
                     `If the "pattern" is not set the corresponding
                     attribute should be set to ".*". The outerHTML was
-                    ${app.refsInput.outerHTML}.`
+                    ${app.refs.input.outerHTML}.`
                 )
                 resolve()
             })
         }
         if (attrName == "value") {
             return new Promise(resolve => {
-                expect(app.refsInput.outerHTML.search(
+                expect(app.refs.input.outerHTML.search(
                     new RegExp("\\bvalue=\"\"", "i")
                 )).toNotEqual(
                     -1,
                     `If the "value" is not set the corresponding
                     attribute should be set as "". The outerHTML was
-                    ${app.refsInput.outerHTML}.`
+                    ${app.refs.input.outerHTML}.`
                 )
                 resolve()
             })
         }
         return new Promise(resolve => {
-            expect(app.refsInput.outerHTML.search(
+            expect(app.refs.input.outerHTML.search(
                 new RegExp("\\b" + attrName + "=", "i")
             )).toEqual(
                 -1,
                 `If the "${cfg.propName}" is not set the corresponding
                 attribute should not be set. The outerHTML was
-                ${app.refsInput.outerHTML}.`
+                ${app.refs.input.outerHTML}.`
             )
             resolve()
         })
@@ -198,7 +198,7 @@ describe('NumericInput', () => {
             {
                 propName: "defaultValue",
                 // attrName: "value",
-                getValue : (widget) => widget.refsInput.value,
+                getValue : (widget) => widget.refs.input.value,
                 map: [
                     { in: ""       , out: ""    , otherProps: { strict: true  }},
                     { in: ""       , out: ""    , otherProps: { strict: false }},
@@ -280,13 +280,13 @@ describe('NumericInput', () => {
             }
         }
 
-        walk(app.refsWrapper, el => {
+        walk(app.refs.wrapper, el => {
             expect(!el.getAttribute('style')).toEqual(true);
         });
 
         app = TestUtils.renderIntoDocument(<NumericInput style={false} mobile />);
 
-        walk(app.refsWrapper, el => {
+        walk(app.refs.wrapper, el => {
             expect(!el.getAttribute('style')).toEqual(true);
         });
 
