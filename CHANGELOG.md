@@ -1,3 +1,24 @@
+2.2.3
+--------------------------------------------------------------------------------
+* Small fix for a bug introduced in 2.2.2.
+* Updated the online demo to include examples of the latest props.
+
+2.2.2
+--------------------------------------------------------------------------------
+* style={false} produces eslint warning so it is deprecated now. There is new `noStyle` boolean prop for that.
+* Fixes the case where string value reappears in input when mouse hovers over the up/down button after clicking away.
+* Document the `strict` prop.
+* A readOnly input is almost like disabled one now. The only difference is that you can copy the value.
+* Various small code improvements.
+
+2.2.1
+--------------------------------------------------------------------------------
+* The input will now use "fontSize: inherit" style.
+* Added the componentClass prop (thanks to @Yukioru)
+* Fixed small issues in tests
+* Added live demo preview (thanks to @ipiranhaa)
+* Accept React 16 as peer dependency
+
 2.2.0
 --------------------------------------------------------------------------------
 * If the component gets re-rendered with new value the onChange callback will not be called.

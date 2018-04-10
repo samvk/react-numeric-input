@@ -68,7 +68,6 @@ type NumericInputState = {
     btnDownActive ?: boolean;
     btnUpHover    ?: boolean;
     btnUpActive   ?: boolean;
-    inputFocus    ?: boolean;
     value         ?: number | null;
     stringValue   ?: string;
 }
@@ -91,6 +90,7 @@ class NumericInput extends Component
         snap         : PropTypes.bool,
         noValidate   : PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
         style        : PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
+        noStyle      : PropTypes.bool,
         type         : PropTypes.string,
         pattern      : PropTypes.string,
         onFocus      : PropTypes.func,
@@ -105,6 +105,7 @@ class NumericInput extends Component
         value        : PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
         defaultValue : PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
         strict       : PropTypes.bool,
+        componentClass: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
         mobile(props, propName) {
             let prop = props[propName]
             if (prop !== true && prop !== false && prop !== 'auto' &&
@@ -121,15 +122,16 @@ class NumericInput extends Component
      * integers
      */
     static defaultProps = {
-        step      : 1,
-        min       : Number.MIN_SAFE_INTEGER || -9007199254740991,
-        max       : Number.MAX_SAFE_INTEGER ||  9007199254740991,
-        precision : null,
-        parse     : null,
-        format    : null,
-        mobile    : 'auto',
-        strict    : false,
-        style     : {}
+        step          : 1,
+        min           : Number.MIN_SAFE_INTEGER || -9007199254740991,
+        max           : Number.MAX_SAFE_INTEGER ||  9007199254740991,
+        precision     : null,
+        parse         : null,
+        format        : null,
+        mobile        : 'auto',
+        strict        : false,
+        componentClass: "input",
+        style         : {}
     };
 
     /**
@@ -264,7 +266,8 @@ class NumericInput extends Component
         // The input (input[type="text"])
         input: {
             paddingRight: '3ex',
-            boxSizing   : 'border-box'
+            boxSizing   : 'border-box',
+            fontSize    : 'inherit'
         },
 
         // The input with bootstrap class
@@ -329,7 +332,10 @@ class NumericInput extends Component
     _isStrict: boolean;
     _ignoreValueChange: boolean;
     _isMounted: boolean;
+    _inputFocus: boolean;
     onTouchEnd: Function;
+    refsWrapper: Object;
+    refsInput: Object;
 
     /**
      * The state of the component
@@ -353,20 +359,17 @@ class NumericInput extends Component
         this._isStrict = !!this.props.strict;
 
         this.state = {
-            // selectionStart: null,
-            // selectionEnd  : null,
             btnDownHover  : false,
             btnDownActive : false,
             btnUpHover    : false,
             btnUpActive   : false,
-            inputFocus    : false,
-            // value         : null,
             stringValue   : "",
             ...this._propsToState(this.props)
         };
-
         this.stop = this.stop.bind(this);
         this.onTouchEnd = this.onTouchEnd.bind(this);
+        this.refsInput = {};
+        this.refsWrapper = {};
     }
 
     _propsToState(props: Object) {
@@ -438,22 +441,22 @@ class NumericInput extends Component
             && prevState.value !== this.state.value // no onChange if the value remains the same
             && (!isNaN(this.state.value) || this.state.value === null) // only if changing to number or null
         ) {
-            this._invokeEventCallback("onChange", this.state.value, this.refs.input.value, this.refs.input)
+            this._invokeEventCallback("onChange", this.state.value, this.refsInput.value, this.refsInput)
         }
 
         // focus the input is needed (for example up/down buttons set
-        // this.state.inputFocus to true)
-        if (this.state.inputFocus) {
-            this.refs.input.focus()
+        // this._inputFocus to true)
+        if (this._inputFocus) {
+            this.refsInput.focus()
 
             // Restore selectionStart (if any)
             if (this.state.selectionStart || this.state.selectionStart === 0) {
-                this.refs.input.selectionStart = this.state.selectionStart
+                this.refsInput.selectionStart = this.state.selectionStart
             }
 
             // Restore selectionEnd (if any)
             if (this.state.selectionEnd || this.state.selectionEnd === 0) {
-                this.refs.input.selectionEnd = this.state.selectionEnd
+                this.refsInput.selectionEnd = this.state.selectionEnd
             }
         }
 
@@ -475,9 +478,9 @@ class NumericInput extends Component
     componentDidMount(): void
     {
         this._isMounted = true
-        this.refs.input.getValueAsNumber = () => this.state.value || 0
+        this.refsInput.getValueAsNumber = () => this.state.value || 0
 
-        this.refs.input.setValue = (value) => {
+        this.refsInput.setValue = (value) => {
             this.setState({
                 value: this._parse(value),
                 stringValue: value
@@ -486,11 +489,11 @@ class NumericInput extends Component
 
         // This is a special case! If the component has the "autoFocus" prop
         // and the browser did focus it we have to pass that to the onFocus
-        if (!this.state.inputFocus && IS_BROWSER && document.activeElement === this.refs.input) {
-            this.state.inputFocus = true
-            this.refs.input.focus()
+        if (!this._inputFocus && IS_BROWSER && document.activeElement === this.refsInput) {
+            this._inputFocus = true
+            this.refsInput.focus()
             this._invokeEventCallback("onFocus", {
-                target: this.refs.input,
+                target: this.refsInput,
                 type  : "focus"
             })
         }
@@ -504,8 +507,8 @@ class NumericInput extends Component
      */
     saveSelection(): void
     {
-        this.state.selectionStart = this.refs.input.selectionStart
-        this.state.selectionEnd   = this.refs.input.selectionEnd
+        this.state.selectionStart = this.refsInput.selectionStart
+        this.state.selectionEnd   = this.refsInput.selectionEnd
     }
 
     /**
@@ -517,14 +520,14 @@ class NumericInput extends Component
     {
         let valid, validationError = ""
 
-        let supportsValidation = !!this.refs.input.checkValidity
+        let supportsValidation = !!this.refsInput.checkValidity
 
         // noValidate
         let noValidate = !!(
             this.props.noValidate && this.props.noValidate != "false"
         )
 
-        this.refs.input.noValidate = noValidate
+        this.refsInput.noValidate = noValidate
 
         // If "noValidate" is set or "checkValidity" is not supported then
         // consider the element valid. Otherwise consider it invalid and
@@ -539,52 +542,52 @@ class NumericInput extends Component
             // In some browsers once a pattern is set it cannot be removed. The
             // browser sets it to "" instead which results in validation
             // failures...
-            if (this.refs.input.pattern === "") {
-                this.refs.input.pattern = this.props.required ? ".+" : ".*"
+            if (this.refsInput.pattern === "") {
+                this.refsInput.pattern = this.props.required ? ".+" : ".*"
             }
 
             // Now check validity
             if (supportsValidation) {
-                this.refs.input.checkValidity()
-                valid = this.refs.input.validity.valid
+                this.refsInput.checkValidity()
+                valid = this.refsInput.validity.valid
 
                 if (!valid) {
-                    validationError = this.refs.input.validationMessage
+                    validationError = this.refsInput.validationMessage
                 }
             }
 
             // Some browsers might fail to validate maxLength
             if (valid && supportsValidation && this.props.maxLength) {
-                if (this.refs.input.value.length > this.props.maxLength) {
+                if (this.refsInput.value.length > this.props.maxLength) {
                     validationError = "This value is too long"
                 }
             }
         }
 
         validationError = validationError || (
-            valid ? "" : this.refs.input.validationMessage || "Unknown Error"
+            valid ? "" : this.refsInput.validationMessage || "Unknown Error"
         )
 
         let validStateChanged = this._valid !== validationError
         this._valid = validationError
         if (validationError) {
-            addClass(this.refs.wrapper, "has-error")
+            addClass(this.refsWrapper, "has-error")
             if (validStateChanged) {
                 this._invokeEventCallback(
                     "onInvalid",
                     validationError,
                     this.state.value,
-                    this.refs.input.value
+                    this.refsInput.value
                 )
             }
         }
         else {
-            removeClass(this.refs.wrapper, "has-error")
+            removeClass(this.refsWrapper, "has-error")
             if (validStateChanged) {
                 this._invokeEventCallback(
                     "onValid",
                     this.state.value,
-                    this.refs.input.value
+                    this.refsInput.value
                 )
             }
         }
@@ -708,25 +711,25 @@ class NumericInput extends Component
                 this._step(e.ctrlKey || e.metaKey ? -0.1 : e.shiftKey ? -10 : -1);
             }
             else {
-                let value = this.refs.input.value, length = value.length;
+                let value = this.refsInput.value, length = value.length;
                 if (e.keyCode === 8) { // backspace
-                    if (this.refs.input.selectionStart == this.refs.input.selectionEnd &&
-                        this.refs.input.selectionEnd > 0 &&
+                    if (this.refsInput.selectionStart == this.refsInput.selectionEnd &&
+                        this.refsInput.selectionEnd > 0 &&
                         value.length &&
-                        value.charAt(this.refs.input.selectionEnd - 1) === ".")
+                        value.charAt(this.refsInput.selectionEnd - 1) === ".")
                     {
                         e.preventDefault();
-                        this.refs.input.selectionStart = this.refs.input.selectionEnd = this.refs.input.selectionEnd - 1;
+                        this.refsInput.selectionStart = this.refsInput.selectionEnd = this.refsInput.selectionEnd - 1;
                     }
                 }
                 else if (e.keyCode === 46) { // delete
-                    if (this.refs.input.selectionStart == this.refs.input.selectionEnd &&
-                        this.refs.input.selectionEnd < length + 1 &&
+                    if (this.refsInput.selectionStart == this.refsInput.selectionEnd &&
+                        this.refsInput.selectionEnd < length + 1 &&
                         value.length &&
-                        value.charAt(this.refs.input.selectionEnd) === ".")
+                        value.charAt(this.refsInput.selectionEnd) === ".")
                     {
                         e.preventDefault();
-                        this.refs.input.selectionStart = this.refs.input.selectionEnd = this.refs.input.selectionEnd + 1;
+                        this.refsInput.selectionStart = this.refsInput.selectionEnd = this.refsInput.selectionEnd + 1;
                     }
                 }
             }
@@ -846,12 +849,14 @@ class NumericInput extends Component
 
         let {
             // These are ignored in rendering
-            step, min, max, precision, parse, format, mobile, snap,
-            value, type, style, defaultValue, onInvalid, onValid, strict,
+            step, min, max, precision, parse, format, mobile, snap, componentClass,
+            value, type, style, defaultValue, onInvalid, onValid, strict, noStyle,
 
             // The rest are passed to the input
             ...rest
         } = this.props;
+
+        noStyle = noStyle || style === false;
 
         // Build the styles
         for (let x in NumericInput.style) {
@@ -877,22 +882,22 @@ class NumericInput extends Component
 
         let attrs = {
             wrap : {
-                style       : style === false ? null : css.wrap,
+                style       : noStyle ? null : css.wrap,
                 className   : 'react-numeric-input',
-                ref         : 'wrapper',
+                ref: (e)=>{if(e!=null && e!= undefined){this.refsWrapper=e;}},
                 onMouseUp   : undefined,
                 onMouseLeave: undefined
             },
             input : {
-                ref: 'input',
+                ref: (e)=>{if(e!=null && e!= undefined){this.refsInput=e;}},
                 type: 'text',
-                style: style === false ? null : Object.assign(
+                style: noStyle ? null : Object.assign(
                     {},
                     css.input,
                     !hasFormControl ?
                         css['input:not(.form-control)'] :
                         {},
-                    state.inputFocus ? css['input:focus'] : {}
+                    this._inputFocus ? css['input:focus'] : {}
                 ),
                 ...rest
             },
@@ -903,11 +908,11 @@ class NumericInput extends Component
                 onMouseLeave: undefined,
                 onTouchStart: undefined,
                 onTouchEnd  : undefined,
-                style: style === false ? null : Object.assign(
+                style: noStyle ? null : Object.assign(
                     {},
                     css.btn,
                     css.btnUp,
-                    props.disabled ?
+                    props.disabled || props.readOnly ?
                         css['btn:disabled'] :
                         state.btnUpActive ?
                             css['btn:active'] :
@@ -923,11 +928,11 @@ class NumericInput extends Component
                 onMouseLeave: undefined,
                 onTouchStart: undefined,
                 onTouchEnd  : undefined,
-                style: style === false ? null : Object.assign(
+                style: noStyle ? null : Object.assign(
                     {},
                     css.btn,
                     css.btnDown,
-                    props.disabled ?
+                    props.disabled || props.readOnly ?
                         css['btn:disabled'] :
                         state.btnDownActive ?
                             css['btn:active'] :
@@ -949,13 +954,15 @@ class NumericInput extends Component
             ""
         );
 
+        let loose = !this._isStrict && (this._inputFocus || !this._isMounted)
+
         // incomplete number
-        if (RE_INCOMPLETE_NUMBER.test(stringValue)) {
+        if (loose && RE_INCOMPLETE_NUMBER.test(stringValue)) {
             attrs.input.value = stringValue;
         }
 
         // Not a number and not empty (loose mode only)
-        else if (!this._isStrict && stringValue && !RE_NUMBER.test(stringValue)) {
+        else if (loose && stringValue && !RE_NUMBER.test(stringValue)) {
             attrs.input.value = stringValue;
         }
 
@@ -969,19 +976,19 @@ class NumericInput extends Component
             attrs.input.value = "";
         }
 
-        if (hasFormControl && style !== false) {
+        if (hasFormControl && !noStyle) {
             Object.assign(attrs.wrap.style, css['wrap.hasFormControl'])
         }
 
         // mobile
-        if (mobile && style !== false) {
+        if (mobile && !noStyle) {
             Object.assign(attrs.input  .style, css['input.mobile'  ])
             Object.assign(attrs.btnUp  .style, css['btnUp.mobile'  ])
             Object.assign(attrs.btnDown.style, css['btnDown.mobile'])
         }
 
         // Attach event listeners if the widget is not disabled
-        if (!props.disabled) {
+        if (!props.disabled && !props.readOnly) {
             Object.assign(attrs.wrap, {
                 onMouseUp    : this.stop,
                 onMouseLeave : this.stop
@@ -1011,10 +1018,10 @@ class NumericInput extends Component
                 onMouseDown: (...args) => {
                     args[0].preventDefault();
                     args[0].persist();
+                    this._inputFocus = true;
                     this.setState({
                         btnUpHover  : true,
-                        btnUpActive : true,
-                        inputFocus  : true
+                        btnUpActive : true
                     }, () => {
                         this._invokeEventCallback("onFocus", ...args)
                         this.onMouseDown('up');
@@ -1047,10 +1054,10 @@ class NumericInput extends Component
                 onMouseDown: (...args) => {
                     args[0].preventDefault();
                     args[0].persist();
+                    this._inputFocus = true;
                     this.setState({
                         btnDownHover  : true,
-                        btnDownActive : true,
-                        inputFocus    : true
+                        btnDownActive : true
                     }, () => {
                         this._invokeEventCallback("onFocus", ...args)
                         this.onMouseDown('down');
@@ -1081,48 +1088,48 @@ class NumericInput extends Component
                 },
                 onFocus: (...args) => {
                     args[0].persist();
-                    this.setState({ inputFocus: true }, () => {
-                        const val = this._parse(args[0].target.value);
-                        this.setState({
-                            value: val,
-                            stringValue: val || val === 0 ? val + "" : ""
-                        }, () => {
-                            this._invokeEventCallback("onFocus", ...args)
-                        })
+                    this._inputFocus = true;
+                    const val = this._parse(args[0].target.value);
+                    this.setState({
+                        value: val,
+                        stringValue: val || val === 0 ? val + "" : ""
+                    }, () => {
+                        this._invokeEventCallback("onFocus", ...args)
                     });
                 },
                 onBlur: (...args) => {
                     let _isStrict = this._isStrict
                     this._isStrict = true
                     args[0].persist();
-                    this.setState({ inputFocus: false }, () => {
-                        const val = this._parse(args[0].target.value);
-                        this.setState({
-                            value: val
-                        }, () => {
-                            this._invokeEventCallback("onBlur", ...args)
-                            this._isStrict = _isStrict
-                        })
+                    this._inputFocus = false;
+                    const val = this._parse(args[0].target.value);
+                    this.setState({
+                        value: val
+                    }, () => {
+                        this._invokeEventCallback("onBlur", ...args)
+                        this._isStrict = _isStrict
                     });
                 }
             });
         }
         else {
-            if (style !== false) {
+            if (!noStyle && props.disabled) {
                 Object.assign(attrs.input.style, css['input:disabled'])
             }
         }
 
+        const InputTag = componentClass || 'input';
+
         if (mobile) {
             return (
                 <span {...attrs.wrap}>
-                    <input {...attrs.input}/>
+                    <InputTag {...attrs.input}/>
                     <b {...attrs.btnUp}>
-                        <i style={ style === false ? null : css.minus }/>
-                        <i style={ style === false ? null : css.plus }/>
+                        <i style={ noStyle ? null : css.minus }/>
+                        <i style={ noStyle ? null : css.plus }/>
                     </b>
                     <b {...attrs.btnDown}>
-                        <i style={ style === false ? null : css.minus }/>
+                        <i style={ noStyle ? null : css.minus }/>
                     </b>
                 </span>
             )
@@ -1130,12 +1137,12 @@ class NumericInput extends Component
 
         return (
             <span {...attrs.wrap}>
-                <input {...attrs.input}/>
+                <InputTag {...attrs.input}/>
                 <b {...attrs.btnUp}>
-                    <i style={ style === false ? null : css.arrowUp }/>
+                    <i style={ noStyle ? null : css.arrowUp }/>
                 </b>
                 <b {...attrs.btnDown}>
-                    <i style={ style === false ? null : css.arrowDown }/>
+                    <i style={ noStyle ? null : css.arrowDown }/>
                 </b>
             </span>
         );

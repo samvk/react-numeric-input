@@ -203,19 +203,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        _this._isStrict = !!_this.props.strict;
 
 	        _this.state = _extends({
-	            // selectionStart: null,
-	            // selectionEnd  : null,
 	            btnDownHover: false,
 	            btnDownActive: false,
 	            btnUpHover: false,
 	            btnUpActive: false,
-	            inputFocus: false,
-	            // value         : null,
 	            stringValue: ""
 	        }, _this._propsToState(_this.props));
-
 	        _this.stop = _this.stop.bind(_this);
 	        _this.onTouchEnd = _this.onTouchEnd.bind(_this);
+	        _this.refsInput = {};
+	        _this.refsWrapper = {};
 	        return _this;
 	    }
 
@@ -306,22 +303,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	            && prevState.value !== this.state.value // no onChange if the value remains the same
 	            && (!isNaN(this.state.value) || this.state.value === null) // only if changing to number or null
 	            ) {
-	                    this._invokeEventCallback("onChange", this.state.value, this.refs.input.value, this.refs.input);
+	                    this._invokeEventCallback("onChange", this.state.value, this.refsInput.value, this.refsInput);
 	                }
 
 	            // focus the input is needed (for example up/down buttons set
-	            // this.state.inputFocus to true)
-	            if (this.state.inputFocus) {
-	                this.refs.input.focus();
+	            // this._inputFocus to true)
+	            if (this._inputFocus) {
+	                this.refsInput.focus();
 
 	                // Restore selectionStart (if any)
 	                if (this.state.selectionStart || this.state.selectionStart === 0) {
-	                    this.refs.input.selectionStart = this.state.selectionStart;
+	                    this.refsInput.selectionStart = this.state.selectionStart;
 	                }
 
 	                // Restore selectionEnd (if any)
 	                if (this.state.selectionEnd || this.state.selectionEnd === 0) {
-	                    this.refs.input.selectionEnd = this.state.selectionEnd;
+	                    this.refsInput.selectionEnd = this.state.selectionEnd;
 	                }
 	            }
 
@@ -349,11 +346,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var _this3 = this;
 
 	            this._isMounted = true;
-	            this.refs.input.getValueAsNumber = function () {
+	            this.refsInput.getValueAsNumber = function () {
 	                return _this3.state.value || 0;
 	            };
 
-	            this.refs.input.setValue = function (value) {
+	            this.refsInput.setValue = function (value) {
 	                _this3.setState({
 	                    value: _this3._parse(value),
 	                    stringValue: value
@@ -362,11 +359,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            // This is a special case! If the component has the "autoFocus" prop
 	            // and the browser did focus it we have to pass that to the onFocus
-	            if (!this.state.inputFocus && IS_BROWSER && document.activeElement === this.refs.input) {
-	                this.state.inputFocus = true;
-	                this.refs.input.focus();
+	            if (!this._inputFocus && IS_BROWSER && document.activeElement === this.refsInput) {
+	                this._inputFocus = true;
+	                this.refsInput.focus();
 	                this._invokeEventCallback("onFocus", {
-	                    target: this.refs.input,
+	                    target: this.refsInput,
 	                    type: "focus"
 	                });
 	            }
@@ -382,8 +379,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'saveSelection',
 	        value: function saveSelection() {
-	            this.state.selectionStart = this.refs.input.selectionStart;
-	            this.state.selectionEnd = this.refs.input.selectionEnd;
+	            this.state.selectionStart = this.refsInput.selectionStart;
+	            this.state.selectionEnd = this.refsInput.selectionEnd;
 	        }
 
 	        /**
@@ -398,12 +395,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var valid = void 0,
 	                validationError = "";
 
-	            var supportsValidation = !!this.refs.input.checkValidity;
+	            var supportsValidation = !!this.refsInput.checkValidity;
 
 	            // noValidate
 	            var noValidate = !!(this.props.noValidate && this.props.noValidate != "false");
 
-	            this.refs.input.noValidate = noValidate;
+	            this.refsInput.noValidate = noValidate;
 
 	            // If "noValidate" is set or "checkValidity" is not supported then
 	            // consider the element valid. Otherwise consider it invalid and
@@ -417,41 +414,41 @@ return /******/ (function(modules) { // webpackBootstrap
 	                // In some browsers once a pattern is set it cannot be removed. The
 	                // browser sets it to "" instead which results in validation
 	                // failures...
-	                if (this.refs.input.pattern === "") {
-	                    this.refs.input.pattern = this.props.required ? ".+" : ".*";
+	                if (this.refsInput.pattern === "") {
+	                    this.refsInput.pattern = this.props.required ? ".+" : ".*";
 	                }
 
 	                // Now check validity
 	                if (supportsValidation) {
-	                    this.refs.input.checkValidity();
-	                    valid = this.refs.input.validity.valid;
+	                    this.refsInput.checkValidity();
+	                    valid = this.refsInput.validity.valid;
 
 	                    if (!valid) {
-	                        validationError = this.refs.input.validationMessage;
+	                        validationError = this.refsInput.validationMessage;
 	                    }
 	                }
 
 	                // Some browsers might fail to validate maxLength
 	                if (valid && supportsValidation && this.props.maxLength) {
-	                    if (this.refs.input.value.length > this.props.maxLength) {
+	                    if (this.refsInput.value.length > this.props.maxLength) {
 	                        validationError = "This value is too long";
 	                    }
 	                }
 	            }
 
-	            validationError = validationError || (valid ? "" : this.refs.input.validationMessage || "Unknown Error");
+	            validationError = validationError || (valid ? "" : this.refsInput.validationMessage || "Unknown Error");
 
 	            var validStateChanged = this._valid !== validationError;
 	            this._valid = validationError;
 	            if (validationError) {
-	                addClass(this.refs.wrapper, "has-error");
+	                addClass(this.refsWrapper, "has-error");
 	                if (validStateChanged) {
-	                    this._invokeEventCallback("onInvalid", validationError, this.state.value, this.refs.input.value);
+	                    this._invokeEventCallback("onInvalid", validationError, this.state.value, this.refsInput.value);
 	                }
 	            } else {
-	                removeClass(this.refs.wrapper, "has-error");
+	                removeClass(this.refsWrapper, "has-error");
 	                if (validStateChanged) {
-	                    this._invokeEventCallback("onValid", this.state.value, this.refs.input.value);
+	                    this._invokeEventCallback("onValid", this.state.value, this.refsInput.value);
 	                }
 	            }
 	        }
@@ -576,19 +573,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    e.preventDefault();
 	                    this._step(e.ctrlKey || e.metaKey ? -0.1 : e.shiftKey ? -10 : -1);
 	                } else {
-	                    var _value = this.refs.input.value,
+	                    var _value = this.refsInput.value,
 	                        length = _value.length;
 	                    if (e.keyCode === 8) {
 	                        // backspace
-	                        if (this.refs.input.selectionStart == this.refs.input.selectionEnd && this.refs.input.selectionEnd > 0 && _value.length && _value.charAt(this.refs.input.selectionEnd - 1) === ".") {
+	                        if (this.refsInput.selectionStart == this.refsInput.selectionEnd && this.refsInput.selectionEnd > 0 && _value.length && _value.charAt(this.refsInput.selectionEnd - 1) === ".") {
 	                            e.preventDefault();
-	                            this.refs.input.selectionStart = this.refs.input.selectionEnd = this.refs.input.selectionEnd - 1;
+	                            this.refsInput.selectionStart = this.refsInput.selectionEnd = this.refsInput.selectionEnd - 1;
 	                        }
 	                    } else if (e.keyCode === 46) {
 	                        // delete
-	                        if (this.refs.input.selectionStart == this.refs.input.selectionEnd && this.refs.input.selectionEnd < length + 1 && _value.length && _value.charAt(this.refs.input.selectionEnd) === ".") {
+	                        if (this.refsInput.selectionStart == this.refsInput.selectionEnd && this.refsInput.selectionEnd < length + 1 && _value.length && _value.charAt(this.refsInput.selectionEnd) === ".") {
 	                            e.preventDefault();
-	                            this.refs.input.selectionStart = this.refs.input.selectionEnd = this.refs.input.selectionEnd + 1;
+	                            this.refsInput.selectionStart = this.refsInput.selectionEnd = this.refsInput.selectionEnd + 1;
 	                        }
 	                    }
 	                }
@@ -747,6 +744,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                format = _props.format,
 	                mobile = _props.mobile,
 	                snap = _props.snap,
+	                componentClass = _props.componentClass,
 	                value = _props.value,
 	                type = _props.type,
 	                style = _props.style,
@@ -754,11 +752,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                onInvalid = _props.onInvalid,
 	                onValid = _props.onValid,
 	                strict = _props.strict,
-	                rest = _objectWithoutProperties(_props, ['step', 'min', 'max', 'precision', 'parse', 'format', 'mobile', 'snap', 'value', 'type', 'style', 'defaultValue', 'onInvalid', 'onValid', 'strict']);
+	                noStyle = _props.noStyle,
+	                rest = _objectWithoutProperties(_props, ['step', 'min', 'max', 'precision', 'parse', 'format', 'mobile', 'snap', 'componentClass', 'value', 'type', 'style', 'defaultValue', 'onInvalid', 'onValid', 'strict', 'noStyle']);
+
+	            noStyle = noStyle || style === false;
 
 	            // Build the styles
-
-
 	            for (var x in NumericInput.style) {
 	                css[x] = _extends({}, NumericInput.style[x], style ? style[x] || {} : {});
 	            }
@@ -776,16 +775,24 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var attrs = {
 	                wrap: {
-	                    style: style === false ? null : css.wrap,
+	                    style: noStyle ? null : css.wrap,
 	                    className: 'react-numeric-input',
-	                    ref: 'wrapper',
+	                    ref: function ref(e) {
+	                        if (e != null && e != undefined) {
+	                            _this6.refsWrapper = e;
+	                        }
+	                    },
 	                    onMouseUp: undefined,
 	                    onMouseLeave: undefined
 	                },
 	                input: _extends({
-	                    ref: 'input',
+	                    ref: function ref(e) {
+	                        if (e != null && e != undefined) {
+	                            _this6.refsInput = e;
+	                        }
+	                    },
 	                    type: 'text',
-	                    style: style === false ? null : _extends({}, css.input, !hasFormControl ? css['input:not(.form-control)'] : {}, state.inputFocus ? css['input:focus'] : {})
+	                    style: noStyle ? null : _extends({}, css.input, !hasFormControl ? css['input:not(.form-control)'] : {}, this._inputFocus ? css['input:focus'] : {})
 	                }, rest),
 	                btnUp: {
 	                    onMouseEnter: undefined,
@@ -794,7 +801,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    onMouseLeave: undefined,
 	                    onTouchStart: undefined,
 	                    onTouchEnd: undefined,
-	                    style: style === false ? null : _extends({}, css.btn, css.btnUp, props.disabled ? css['btn:disabled'] : state.btnUpActive ? css['btn:active'] : state.btnUpHover ? css['btn:hover'] : {})
+	                    style: noStyle ? null : _extends({}, css.btn, css.btnUp, props.disabled || props.readOnly ? css['btn:disabled'] : state.btnUpActive ? css['btn:active'] : state.btnUpHover ? css['btn:hover'] : {})
 	                },
 	                btnDown: {
 	                    onMouseEnter: undefined,
@@ -803,7 +810,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    onMouseLeave: undefined,
 	                    onTouchStart: undefined,
 	                    onTouchEnd: undefined,
-	                    style: style === false ? null : _extends({}, css.btn, css.btnDown, props.disabled ? css['btn:disabled'] : state.btnDownActive ? css['btn:active'] : state.btnDownHover ? css['btn:hover'] : {})
+	                    style: noStyle ? null : _extends({}, css.btn, css.btnDown, props.disabled || props.readOnly ? css['btn:disabled'] : state.btnDownActive ? css['btn:active'] : state.btnDownHover ? css['btn:hover'] : {})
 	                }
 	            };
 
@@ -817,13 +824,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	            // or finally use ""
 	            "");
 
+	            var loose = !this._isStrict && (this._inputFocus || !this._isMounted);
+
 	            // incomplete number
-	            if (RE_INCOMPLETE_NUMBER.test(stringValue)) {
+	            if (loose && RE_INCOMPLETE_NUMBER.test(stringValue)) {
 	                attrs.input.value = stringValue;
 	            }
 
 	            // Not a number and not empty (loose mode only)
-	            else if (!this._isStrict && stringValue && !RE_NUMBER.test(stringValue)) {
+	            else if (loose && stringValue && !RE_NUMBER.test(stringValue)) {
 	                    attrs.input.value = stringValue;
 	                }
 
@@ -837,19 +846,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	                            attrs.input.value = "";
 	                        }
 
-	            if (hasFormControl && style !== false) {
+	            if (hasFormControl && !noStyle) {
 	                _extends(attrs.wrap.style, css['wrap.hasFormControl']);
 	            }
 
 	            // mobile
-	            if (mobile && style !== false) {
+	            if (mobile && !noStyle) {
 	                _extends(attrs.input.style, css['input.mobile']);
 	                _extends(attrs.btnUp.style, css['btnUp.mobile']);
 	                _extends(attrs.btnDown.style, css['btnDown.mobile']);
 	            }
 
 	            // Attach event listeners if the widget is not disabled
-	            if (!props.disabled) {
+	            if (!props.disabled && !props.readOnly) {
 	                _extends(attrs.wrap, {
 	                    onMouseUp: this.stop,
 	                    onMouseLeave: this.stop
@@ -883,10 +892,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                        args[0].preventDefault();
 	                        args[0].persist();
+	                        _this6._inputFocus = true;
 	                        _this6.setState({
 	                            btnUpHover: true,
-	                            btnUpActive: true,
-	                            inputFocus: true
+	                            btnUpActive: true
 	                        }, function () {
 	                            _this6._invokeEventCallback.apply(_this6, ["onFocus"].concat(args));
 	                            _this6.onMouseDown('up');
@@ -922,10 +931,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                        args[0].preventDefault();
 	                        args[0].persist();
+	                        _this6._inputFocus = true;
 	                        _this6.setState({
 	                            btnDownHover: true,
-	                            btnDownActive: true,
-	                            inputFocus: true
+	                            btnDownActive: true
 	                        }, function () {
 	                            _this6._invokeEventCallback.apply(_this6, ["onFocus"].concat(args));
 	                            _this6.onMouseDown('down');
@@ -968,14 +977,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        }
 
 	                        args[0].persist();
-	                        _this6.setState({ inputFocus: true }, function () {
-	                            var val = _this6._parse(args[0].target.value);
-	                            _this6.setState({
-	                                value: val,
-	                                stringValue: val || val === 0 ? val + "" : ""
-	                            }, function () {
-	                                _this6._invokeEventCallback.apply(_this6, ["onFocus"].concat(args));
-	                            });
+	                        _this6._inputFocus = true;
+	                        var val = _this6._parse(args[0].target.value);
+	                        _this6.setState({
+	                            value: val,
+	                            stringValue: val || val === 0 ? val + "" : ""
+	                        }, function () {
+	                            _this6._invokeEventCallback.apply(_this6, ["onFocus"].concat(args));
 	                        });
 	                    },
 	                    onBlur: function onBlur() {
@@ -986,38 +994,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        var _isStrict = _this6._isStrict;
 	                        _this6._isStrict = true;
 	                        args[0].persist();
-	                        _this6.setState({ inputFocus: false }, function () {
-	                            var val = _this6._parse(args[0].target.value);
-	                            _this6.setState({
-	                                value: val
-	                            }, function () {
-	                                _this6._invokeEventCallback.apply(_this6, ["onBlur"].concat(args));
-	                                _this6._isStrict = _isStrict;
-	                            });
+	                        _this6._inputFocus = false;
+	                        var val = _this6._parse(args[0].target.value);
+	                        _this6.setState({
+	                            value: val
+	                        }, function () {
+	                            _this6._invokeEventCallback.apply(_this6, ["onBlur"].concat(args));
+	                            _this6._isStrict = _isStrict;
 	                        });
 	                    }
 	                });
 	            } else {
-	                if (style !== false) {
+	                if (!noStyle && props.disabled) {
 	                    _extends(attrs.input.style, css['input:disabled']);
 	                }
 	            }
+
+	            var InputTag = componentClass || 'input';
 
 	            if (mobile) {
 	                return _react2.default.createElement(
 	                    'span',
 	                    attrs.wrap,
-	                    _react2.default.createElement('input', attrs.input),
+	                    _react2.default.createElement(InputTag, attrs.input),
 	                    _react2.default.createElement(
 	                        'b',
 	                        attrs.btnUp,
-	                        _react2.default.createElement('i', { style: style === false ? null : css.minus }),
-	                        _react2.default.createElement('i', { style: style === false ? null : css.plus })
+	                        _react2.default.createElement('i', { style: noStyle ? null : css.minus }),
+	                        _react2.default.createElement('i', { style: noStyle ? null : css.plus })
 	                    ),
 	                    _react2.default.createElement(
 	                        'b',
 	                        attrs.btnDown,
-	                        _react2.default.createElement('i', { style: style === false ? null : css.minus })
+	                        _react2.default.createElement('i', { style: noStyle ? null : css.minus })
 	                    )
 	                );
 	            }
@@ -1025,16 +1034,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return _react2.default.createElement(
 	                'span',
 	                attrs.wrap,
-	                _react2.default.createElement('input', attrs.input),
+	                _react2.default.createElement(InputTag, attrs.input),
 	                _react2.default.createElement(
 	                    'b',
 	                    attrs.btnUp,
-	                    _react2.default.createElement('i', { style: style === false ? null : css.arrowUp })
+	                    _react2.default.createElement('i', { style: noStyle ? null : css.arrowUp })
 	                ),
 	                _react2.default.createElement(
 	                    'b',
 	                    attrs.btnDown,
-	                    _react2.default.createElement('i', { style: style === false ? null : css.arrowDown })
+	                    _react2.default.createElement('i', { style: noStyle ? null : css.arrowDown })
 	                )
 	            );
 	        }
@@ -1058,6 +1067,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    snap: _propTypes2.default.bool,
 	    noValidate: _propTypes2.default.oneOfType([_propTypes2.default.bool, _propTypes2.default.string]),
 	    style: _propTypes2.default.oneOfType([_propTypes2.default.object, _propTypes2.default.bool]),
+	    noStyle: _propTypes2.default.bool,
 	    type: _propTypes2.default.string,
 	    pattern: _propTypes2.default.string,
 	    onFocus: _propTypes2.default.func,
@@ -1072,6 +1082,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: _propTypes2.default.oneOfType([_propTypes2.default.number, _propTypes2.default.string]),
 	    defaultValue: _propTypes2.default.oneOfType([_propTypes2.default.number, _propTypes2.default.string]),
 	    strict: _propTypes2.default.bool,
+	    componentClass: _propTypes2.default.string,
 	    mobile: function mobile(props, propName) {
 	        var prop = props[propName];
 	        if (prop !== true && prop !== false && prop !== 'auto' && typeof prop != 'function') {
@@ -1088,6 +1099,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    format: null,
 	    mobile: 'auto',
 	    strict: false,
+	    componentClass: "input",
 	    style: {}
 	};
 	NumericInput.style = {
@@ -1215,7 +1227,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // The input (input[type="text"])
 	    input: {
 	        paddingRight: '3ex',
-	        boxSizing: 'border-box'
+	        boxSizing: 'border-box',
+	        fontSize: 'inherit'
 	    },
 
 	    // The input with bootstrap class
