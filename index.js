@@ -356,10 +356,9 @@ module.exports =
 	        }
 	    }, {
 	        key: '_validInputKey',
-	        value: function _validInputKey(keyCode) {
-	            var numberKey = 48 <= keyCode && keyCode <= 57 || 96 <= keyCode && keyCode <= 105;
-	            var specialKey = [9, 13, 37, 39].indexOf(keyCode) !== -1;
-	            return numberKey || specialKey;
+	        value: function _validInputKey(key) {
+	            return (/^[0-9]$|^(Tab|Enter|(Arrow)?Left|(Arrow)?Right)$/.test(key)
+	            );
 	        }
 	    }, {
 	        key: '_onKeyDown',
@@ -391,7 +390,7 @@ module.exports =
 	                            e.preventDefault();
 	                            this.refsInput.selectionStart = this.refsInput.selectionEnd = this.refsInput.selectionEnd + 1;
 	                        }
-	                    } else if (!this._validInputKey(e.keyCode)) {
+	                    } else if (!this._validInputKey(e.key)) {
 	                        e.preventDefault();
 	                    }
 	                }

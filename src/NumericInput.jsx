@@ -696,14 +696,8 @@ class NumericInput extends Component
     /**
      * Check that the key is numeric
      */
-    _validInputKey(keyCode: number): boolean {
-        const numberKey = (
-            48 <= keyCode && keyCode <= 57
-        ) || (
-            96 <= keyCode && keyCode <= 105
-        );
-        const specialKey = [9, 13, 37, 39].indexOf(keyCode) !== -1; // ['tab', 'enter', 'left', 'right']
-        return numberKey || specialKey;
+    _validInputKey(key: string): boolean {
+        return /^[0-9]$|^(Tab|Enter|(Arrow)?Left|(Arrow)?Right)$/.test(key)
     }
 
     /**
@@ -745,7 +739,7 @@ class NumericInput extends Component
                         this.refsInput.selectionStart = this.refsInput.selectionEnd = this.refsInput.selectionEnd + 1;
                     }
                 }
-                else if (!this._validInputKey(e.keyCode)) {
+                else if (!this._validInputKey(e.key)) {
                     e.preventDefault(); // don't allow non-numeric characters
                 }
             }
