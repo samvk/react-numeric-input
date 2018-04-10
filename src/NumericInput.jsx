@@ -694,6 +694,19 @@ class NumericInput extends Component
     }
 
     /**
+     * Check that the key is numeric
+     */
+    _validInputKey(keyCode: number): boolean {
+        const numberKey = (
+            48 <= keyCode && keyCode <= 57
+        ) || (
+            96 <= keyCode && keyCode <= 105
+        );
+        const specialKey = [9, 13, 37, 39].indexOf(keyCode) !== -1; // ['tab', 'enter', 'left', 'right']
+        return numberKey || specialKey;
+    }
+
+    /**
      * This binds the Up/Down arrow key listeners
      */
     _onKeyDown(...args: Array<any>): void
@@ -731,6 +744,9 @@ class NumericInput extends Component
                         e.preventDefault();
                         this.refsInput.selectionStart = this.refsInput.selectionEnd = this.refsInput.selectionEnd + 1;
                     }
+                }
+                else if (!this._validInputKey(e.keyCode)) {
+                    e.preventDefault(); // don't allow non-numeric characters
                 }
             }
         }

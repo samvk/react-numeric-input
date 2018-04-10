@@ -74,12 +74,6 @@ module.exports =
 	var IS_BROWSER = typeof document != 'undefined';
 	var RE_NUMBER = /^[+-]?((\.\d+)|(\d+(\.\d+)?))$/;
 	var RE_INCOMPLETE_NUMBER = /^([+-]|\.0*|[+-]\.0*|[+-]?\d+\.)?$/;
-	
-	function validInputKey(keyCode) {
-		var numberKey = (48 <= keyCode && keyCode <= 57) || (96 <= keyCode && keyCode <= 105);
-		var specialKey = [9, 13, 37, 39].indexOf(keyCode) !== -1; // ['tab', 'enter', 'left', 'right']
-		return numberKey || specialKey;
-	}
 
 	function addClass(element, className) {
 	    if (element.classList) {
@@ -361,6 +355,13 @@ module.exports =
 	            return false;
 	        }
 	    }, {
+	        key: '_validInputKey',
+	        value: function _validInputKey(keyCode) {
+	            var numberKey = 48 <= keyCode && keyCode <= 57 || 96 <= keyCode && keyCode <= 105;
+	            var specialKey = [9, 13, 37, 39].indexOf(keyCode) !== -1;
+	            return numberKey || specialKey;
+	        }
+	    }, {
 	        key: '_onKeyDown',
 	        value: function _onKeyDown() {
 	            for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
@@ -390,9 +391,9 @@ module.exports =
 	                            e.preventDefault();
 	                            this.refsInput.selectionStart = this.refsInput.selectionEnd = this.refsInput.selectionEnd + 1;
 	                        }
-	                    } else if(!validInputKey(e.keyCode)) {
-			    	e.preventDefault(); // don't allow non-numberic characters
-			    }
+	                    } else if (!this._validInputKey(e.keyCode)) {
+	                        e.preventDefault();
+	                    }
 	                }
 	            }
 	        }
@@ -812,7 +813,7 @@ module.exports =
 	    value: _propTypes2.default.oneOfType([_propTypes2.default.number, _propTypes2.default.string]),
 	    defaultValue: _propTypes2.default.oneOfType([_propTypes2.default.number, _propTypes2.default.string]),
 	    strict: _propTypes2.default.bool,
-	    componentClass: _propTypes2.default.string,
+	    componentClass: _propTypes2.default.oneOfType([_propTypes2.default.func, _propTypes2.default.string]),
 	    mobile: function mobile(props, propName) {
 	        var prop = props[propName];
 	        if (prop !== true && prop !== false && prop !== 'auto' && typeof prop != 'function') {
